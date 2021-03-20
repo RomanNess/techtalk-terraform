@@ -3,3 +3,6 @@
 
 .idea
 .envrc
+
+**/build/*
+!.gitkeep
