@@ -32,7 +32,7 @@ resource "aws_lambda_function" "lambda" {
   source_code_hash = data.archive_file.main_zip.output_base64sha256
 
   handler = "main.handler"
-  runtime = "nodejs10.x"
+  runtime = "nodejs12.x"
 
   role = aws_iam_role.lambda.arn
 }
