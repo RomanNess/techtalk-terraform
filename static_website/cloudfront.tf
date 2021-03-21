@@ -23,7 +23,7 @@ resource "aws_cloudfront_distribution" "website" {
       }
     }
 
-    // authentication with basic-auth
+    // authorization with basic-auth
     lambda_function_association {
       event_type   = "viewer-request"
       include_body = false
@@ -39,6 +39,7 @@ resource "aws_cloudfront_distribution" "website" {
       restriction_type = "none"
     }
   }
+  // use custom tls certificate
   viewer_certificate {
     acm_certificate_arn = module.acm_request_certificate.arn
     ssl_support_method  = "sni-only"
@@ -47,6 +48,7 @@ resource "aws_cloudfront_distribution" "website" {
   default_root_object = "index.html"
   is_ipv6_enabled     = true
 
+  // use custom domains for the cf distribution
   aliases = [
     var.website_domain
   ]

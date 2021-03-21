@@ -88,9 +88,3 @@ Resources:
     Properties:
       Description : "1"
       FunctionName : !Ref BasicAuthLambda
-
-  CloudFrontOriginAccessIdentity:
-    Type: "AWS::CloudFront::CloudFrontOriginAccessIdentity"
-    Properties:
-      CloudFrontOriginAccessIdentityConfig:
-        Comment: "CloudFront OAI"
