@@ -33,11 +33,16 @@ resource "aws_cloudfront_distribution" "website" {
     }
   }
   viewer_certificate {
-    cloudfront_default_certificate = true
+    acm_certificate_arn = module.acm_request_certificate.arn
+    ssl_support_method  = "sni-only"
   }
 
   default_root_object = "index.html"
   is_ipv6_enabled     = true
+
+  aliases = [
+    var.website_domain
+  ]
 }
 
 output "cloudfront_domain_name" {
