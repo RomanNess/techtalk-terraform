@@ -1,0 +1,96 @@
+AWSTemplateFormatVersion: "2010-09-09"
+
+Parameters:
+  NameSuffix:
+    Description: "It may take up to 24h to delete a replicated Lambda function. Use the suffix to create new instances of the stack int he meantime."
+    Type: String
+
+Outputs:
+  LambdaQualifiedArn:
+    Value: !Ref BasicAuthLambdaVersion
+
+Resources:
+  LambdaRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+      RoleName: "BasicLambdaEdgePermissionsRole"
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Principal:
+              Service:
+                - "lambda.amazonaws.com"
+                - "edgelambda.amazonaws.com"
+            Action:
+              - "sts:AssumeRole"
+      Path:
+        "/service-role/"
+      ManagedPolicyArns:
+        - "arn:aws:iam::aws:policy/CloudWatchLogsFullAccess"
+
+  BasicAuthLambda:
+    Type: "AWS::Lambda::Function"
+    Properties:
+      FunctionName: !Join [ "", ["BasicAuthLambda", !Ref NameSuffix ]]
+      Role: !GetAtt LambdaRole.Arn
+      Runtime: "nodejs12.x"
+      Handler: "index.handler"
+      MemorySize: 128
+      Timeout: 5
+      Code:
+        ZipFile: |
+          'use strict';
+          exports.handler = (event, context, callback) => {
+
+            // Get request and request headers
+            const request = event.Records[0].cf.request;
+            const headers = request.headers;
+
+            // Configure authentication for the client
+            const authUserForClient = 'terraform';
+            const authPassForClient = 'ftw';
+            const authStringForClient = 'Basic ' + new Buffer(authUserForClient + ':' + authPassForClient).toString('base64');
+
+            // Check wheter the requested resource is allowed or not
+            let isAllowedResource = false;
+            //Following part will unblock the .png,.svg and .jpg extensions on your cloudfront contained by S3 bucket
+            if (request.uri === '/manifest.json') {
+              isAllowedResource = true;
+            }
+            else if (/^\/.+(\.png|\.svg|\.jpg)$/.test(request.uri)) {
+              isAllowedResource = true;
+            }
+
+            // Require Basic authentication
+            if (!isAllowedResource && (typeof headers.authorization == 'undefined' || headers.authorization[0].value != authStringForClient)) {
+              const body = 'Unauthorized';
+              const response = {
+                status: '401',
+                statusDescription: 'Unauthorized',
+                body: body,
+                headers: {
+                  'www-authenticate': [{
+                    key: 'WWW-Authenticate',
+                    value: 'Basic'
+                  }]
+                },
+              };
+              callback(null, response);
+            }
+
+            // Continue request processing if authentication passed
+            callback(null, request);
+          };
+
+  BasicAuthLambdaVersion:
+    Type: "AWS::Lambda::Version"
+    Properties:
+      Description : "1"
+      FunctionName : !Ref BasicAuthLambda
+
+  CloudFrontOriginAccessIdentity:
+    Type: "AWS::CloudFront::CloudFrontOriginAccessIdentity"
+    Properties:
+      CloudFrontOriginAccessIdentityConfig:
+        Comment: "CloudFront OAI"

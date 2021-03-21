@@ -22,6 +22,13 @@ resource "aws_cloudfront_distribution" "website" {
         forward = "none"
       }
     }
+
+    // authentication with basic-auth
+    lambda_function_association {
+      event_type   = "viewer-request"
+      include_body = false
+      lambda_arn   = data.aws_cloudformation_stack.basic_auth_lambda.outputs.LambdaQualifiedArn
+    }
   }
   origin {
     domain_name = aws_s3_bucket.website.bucket_regional_domain_name
@@ -47,4 +54,10 @@ resource "aws_cloudfront_distribution" "website" {
 
 output "cloudfront_domain_name" {
   value = aws_cloudfront_distribution.website.domain_name
+}
+
+data "aws_cloudformation_stack" "basic_auth_lambda" {
+  provider = aws.virginia
+
+  name = "basicAuthLambda2"
 }
