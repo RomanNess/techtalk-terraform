@@ -8,7 +8,7 @@ provider "aws" {
 data "aws_caller_identity" "current" {}
 
 locals {
-  s3_website_origin_id = "S3-static-website-640847388391"
+  s3_website_origin_id = "S3-static-website"
 }
 
 resource "aws_s3_bucket" "website" {

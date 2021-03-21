@@ -1,5 +1,5 @@
-STACK_NAME=basicAuthLambda2
-NAME_SUFFIX="2"
+STACK_NAME=basicAuthLambda
+NAME_SUFFIX=""
 
 create-stack:
 	aws cloudformation create-stack --stack-name $(STACK_NAME) \

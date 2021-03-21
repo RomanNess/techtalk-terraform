@@ -1,5 +1,5 @@
 locals {
-  s3_website_origin_id = "S3-static-website-640847388391"
+  s3_website_origin_id = "S3-static-website"
 }
 
 resource "aws_cloudfront_distribution" "website" {
@@ -61,5 +61,5 @@ output "cloudfront_domain_name" {
 data "aws_cloudformation_stack" "basic_auth_lambda" {
   provider = aws.virginia
 
-  name = "basicAuthLambda2"
+  name = "basicAuthLambda"
 }
