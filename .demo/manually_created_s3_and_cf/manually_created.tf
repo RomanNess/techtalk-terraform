@@ -55,8 +55,18 @@ resource "aws_s3_bucket_object" "index_html" {
   content_type  = "text/html"
   cache_control = "public, must-revalidate, proxy-revalidate, max-age=0"
 
-  source = "html/index.html"
-  etag = filemd5("html/index.html")
+  content = <<EOF
+<!doctype html>
+<meta charset="UTF-8">
+<html>
+<head>
+    <title>terraform ftw</title>
+</head>
+<body>
+<h1 style="font-size: 8em;">A simple static website 🐣</h1>
+</body>
+</html>
+EOF
 }
 
 resource "aws_cloudfront_distribution" "website" {
