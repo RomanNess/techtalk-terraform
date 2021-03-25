@@ -8,66 +8,11 @@ provider "aws" {
 data "aws_caller_identity" "current" {}
 
 locals {
-  s3_website_origin_id = "S3-static-website"
+  s3_website_origin_id        = "S3-static-website"
+  bucket_regional_domain_name = "static-website-640847388391.s3.eu-central-1.amazonaws.com"
 }
 
-resource "aws_s3_bucket" "website" {
-  bucket = "static-website-${data.aws_caller_identity.current.account_id}"
-  acl    = "public-read"
-
-  website {
-    index_document = "index.html"
-    error_document = "index.html"
-  }
-
-  force_destroy = true
-}
-
-data "aws_iam_policy_document" "website_bucket" {
-  statement {
-    sid       = "PublicRead"
-    principals {
-      type        = "*"
-      identifiers = [
-        "*"
-      ]
-    }
-    actions   = [
-      "s3:GetObject",
-      "s3:GetObjectVersion"
-    ]
-    resources = [
-      "${aws_s3_bucket.website.arn}/*"
-    ]
-  }
-}
-
-resource "aws_s3_bucket_policy" "update_website_root_bucket_policy" {
-  bucket = aws_s3_bucket.website.id
-
-  policy = data.aws_iam_policy_document.website_bucket.json
-}
-
-resource "aws_s3_bucket_object" "index_html" {
-  bucket = aws_s3_bucket.website.bucket
-  key    = "index.html"
-
-  content_type  = "text/html"
-  cache_control = "public, must-revalidate, proxy-revalidate, max-age=0"
-
-  content = <<EOF
-<!doctype html>
-<meta charset="UTF-8">
-<html>
-<head>
-    <title>terraform ftw</title>
-</head>
-<body>
-<h1 style="font-size: 8em;">A simple static website 🐣</h1>
-</body>
-</html>
-EOF
-}
+// create s3 resources in static_website to save time during demo
 
 resource "aws_cloudfront_distribution" "website" {
   enabled = true
@@ -91,7 +36,7 @@ resource "aws_cloudfront_distribution" "website" {
     }
   }
   origin {
-    domain_name = aws_s3_bucket.website.bucket_regional_domain_name
+    domain_name = local.bucket_regional_domain_name
     origin_id   = local.s3_website_origin_id
   }
   restrictions {
