@@ -9,6 +9,7 @@ data "aws_kms_alias" "s3" {
   name = "alias/aws/s3"
 }
 
+// s3 bucket that will be used for terraform remote state in next steps
 resource "aws_s3_bucket" "terraform_remote_state" {
   bucket = "techtalk-terraform-remote-state-${data.aws_caller_identity.current.account_id}"
   acl    = "private"

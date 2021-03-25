@@ -1,3 +1,4 @@
+// bucket that hosts the website
 resource "aws_s3_bucket" "website" {
   bucket = "static-website-${data.aws_caller_identity.current.account_id}"
   acl    = "public-read"
@@ -29,12 +30,14 @@ data "aws_iam_policy_document" "website_bucket" {
   }
 }
 
+// allow public read
 resource "aws_s3_bucket_policy" "update_website_root_bucket_policy" {
   bucket = aws_s3_bucket.website.id
 
   policy = data.aws_iam_policy_document.website_bucket.json
 }
 
+// usually the content of the bucket would be managed by sth like 's3 sync'
 resource "aws_s3_bucket_object" "index_html" {
   bucket = aws_s3_bucket.website.bucket
   key    = "index.html"

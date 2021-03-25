@@ -58,6 +58,7 @@ output "cloudfront_domain_name" {
   value = aws_cloudfront_distribution.website.domain_name
 }
 
+// reference cloudformation stack in terraform
 data "aws_cloudformation_stack" "basic_auth_lambda" {
   provider = aws.virginia
 
